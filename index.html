@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Info Pro</title>
+    <style>
+        body { font-family: 'Segoe UI', monospace; background: #121212; color: #e0e0e0; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 600px; background: #1e1e1e; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        h2 { text-align: center; color: #00bcd4; margin-bottom: 20px; }
+        input, textarea, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 5px; border: 1px solid #333; background: #252526; color: white; box-sizing: border-box; }
+        input:focus, textarea:focus { border-color: #00bcd4; outline: none; }
+        button { font-weight: bold; cursor: pointer; transition: 0.2s; border: none; }
+        #btnCheck { background: #007acc; }
+        #btnCheck:hover { background: #005f9e; }
+        #btnCopy { background: #28a745; display: none; margin-top: 5px; }
+        #result { height: 300px; font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
+        .loading { opacity: 0.7; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>TOOL CHECK INFO</h2>
+    <input type="text" id="inputData" placeholder="Nhập tài khoản|mật khẩu (Ví dụ: user|pass)">
+    <button id="btnCheck" onclick="startCheck()">KIỂM TRA NGAY</button>
+    
+    <textarea id="result" placeholder="Kết quả sẽ hiện ở đây..." readonly></textarea>
+    <button id="btnCopy" onclick="copyResult()">COPY KẾT QUẢ</button>
+</div>
+
+<script>
+    // --- LINK WORKER CỦA BẠN ---
+    const WORKER_URL = 'https://proud-art-e32c.qdev09.workers.dev/'; 
+
+    async function startCheck() {
+        const input = document.getElementById('inputData').value.trim();
+        const btn = document.getElementById('btnCheck');
+        const resBox = document.getElementById('result');
+        const btnCopy = document.getElementById('btnCopy');
+
+        if (!input.includes('|')) {
+            alert("⚠️ Sai định dạng! Hãy nhập: user|pass");
+            return;
+        }
+
+        const [user, pass] = input.split('|');
+
+        // UI Loading
+        btn.innerText = "Đang kết nối...";
+        btn.classList.add('loading');
+        resBox.value = "⏳ Đang lấy dữ liệu...";
+        btnCopy.style.display = 'none';
+
+        try {
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ account: user.trim(), password: pass.trim() })
+            });
+
+            const json = await response.json();
+
+            if (json.status === 'success') {
+                const d = json.data;
+                
+                // --- FORMAT DỮ LIỆU Y HỆT FILE PYTHON ---
+                // Sử dụng toán tử || "" để tránh lỗi null nếu API trả thiếu trường
+                const formattedString = 
+`${d.username}|${d.password}| ` +
+`UID: ${d.uid || "null"} | ` +
+`NAME: ${d.name || "null"} | ` +
+`RANK: ${d.rank || "null"} | ` +
+`LEVEL: ${d.level || "null"} | ` +
+`TƯỚNG: ${d.tuong || "null"} | ` +
+`SKIN: ${d.skin || "null"} | ` +
+`QH: ${d.qh || "null"} | ` +
+`LỊCH SỬ NẠP: ${d.lsnap || "null"} | ` +
+`SÒ: ${d.so || "null"} | ` +
+`CCCD: ${d.cccd || "null"} | ` +
+`EMAIL: ${d.email || "null"} | ` +
+`AUTHEN: ${d.authen || "null"} | ` +
+`SĐT: ${d.sdt || "null"} | ` +
+`FB: ${d.fb || "null"} | ` +
+`BAND: ${d.band || "null"} | ` +
+`NGÀY ĐK: ${d.timeregacc || "null"} | ` +
+`REGION: ${d.acc_country || "null"} | ` +
+`LOGIN GẦN NHẤT: ${d.lslogin || "null"} | ` +
+`ĐỔI MAIL: ${d.change_email || "null"} | ` +
+`ĐỔI SĐT: ${d.change_sdt || "null"} | ` +
+`ĐỔI PASS: ${d.change_password || "null"} | ` +
+`SS: ${d.ss || "null"} | ` +
+`SSS: ${d.sss || "null"} | ` +
+`SKIN HIẾM: ${d.skinlimited || "null"} | ` +
+`MYSTIC: ${d.mystic || "null"} | ` +
+`S-DREAMER: ${d.sdreamer || "null"} | ` +
+`VALENTINE: ${d.valentine || "null"} | ` +
+`OTHER: ${d.other || "null"} | ` +
+`ANIME: ${d.anime || "null"} | ` +
+`AOV: ${d.aov || "null"} | ` +
+`HOẠT ĐỘNG: ${d.tshoatdong || "null"} | ` +
+`TÌNH TRẠNG: ${d.tt || "null"}`;
+
+                resBox.value = formattedString;
+                btnCopy.style.display = 'block'; // Hiện nút Copy
+            } else {
+                resBox.value = `❌ LỖI: ${json.msg || json.data || "Không xác định"}`;
+            }
+
+        } catch (e) {
+            resBox.value = `❌ Lỗi kết nối: ${e.message}`;
+        }
+
+        btn.innerText = "KIỂM TRA NGAY";
+        btn.classList.remove('loading');
+    }
+
+    function copyResult() {
+        const copyText = document.getElementById("result");
+        copyText.select();
+        document.execCommand("copy");
+        alert("Đã copy thành công!");
+    }
+</script>
+
+</body>
+</html>
