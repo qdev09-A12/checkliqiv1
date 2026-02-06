@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYSTEM MAINTAINED</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #050505;
+            color: #0f0;
+            font-family: 'Orbitron', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            text-transform: uppercase;
+        }
+        .container { text-align: center; position: relative; z-index: 2; }
+        h1 {
+            font-size: 4rem;
+            margin: 0;
+            text-shadow: 2px 2px 0px #f0f, -2px -2px 0px #0ff;
+            animation: glitch 1s infinite alternate;
+        }
+        p { font-size: 1.5rem; letter-spacing: 5px; color: #0ff; margin-top: 20px; }
+        .lock-icon { font-size: 80px; margin-bottom: 20px; color: #ff0055; animation: pulse 1s infinite; }
+        
+        /* Hiệu ứng nền lưới */
+        .grid-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: 2px 2px 0px #f0f, -2px -2px 0px #0ff; transform: skew(0deg); }
+            20% { text-shadow: -2px -2px 0px #f0f, 2px 2px 0px #0ff; transform: skew(-10deg); }
+            40% { text-shadow: 2px -2px 0px #f0f, -2px 2px 0px #0ff; transform: skew(10deg); }
+            100% { text-shadow: -2px 2px 0px #f0f, 2px -2px 0px #0ff; transform: skew(0deg); }
+        }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    <div class="container">
+        <div class="lock-icon">🔒</div>
+        <h1>SYSTEM<br>LOCKED</h1>
+        <p>BẢO TRÌ VĨNH VIỄN</p>
+        <p style="font-size: 14px; color: #555; margin-top: 50px;">SESSION EXPIRED: 09-02-2026</p>
+    </div>
+    <script>
+        // Chặn quay lại trang cũ
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () { history.go(1); };
+    </script>
+</body>
+</html>
